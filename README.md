@@ -371,7 +371,7 @@ const client = new PingenClient({
 });
 ```
 
-The SDK sends a versioned `User-Agent` header (`pingen2-sdk-js/<version>`), automatically derived from `package.json`.
+The SDK identifies itself with a `User-Agent: PINGEN.SDK.NODE` header on every request.
 
 ---
 
@@ -404,7 +404,7 @@ docker compose down
 
 ## Versioning
 
-Follows [semver](https://semver.org/). The published version is derived automatically from the latest git tag — tag a release (`git tag v1.2.3 && git push --tags`) and `npm publish` will set `package.json` accordingly via `prepublishOnly`. The same version is also baked into the `User-Agent` header at runtime, so server-side telemetry can correlate requests with a specific SDK release.
+Follows [semver](https://semver.org/). The published version is derived automatically from the latest git tag — tag a release (`git tag v1.2.3 && git push --tags`) and `npm publish` will set `package.json` accordingly via `prepublishOnly`.
 
 ---
 
