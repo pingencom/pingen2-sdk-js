@@ -1,0 +1,14 @@
+services:
+  nodejs-sdk:
+    image: pingen/nodejs-sdk
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_VERSION: ${NODE_VERSION:-20}
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: nodejs-sdk
+    volumes:
+      - ./:/usr/src
+      - /usr/src/node_modules

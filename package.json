@@ -1,0 +1,56 @@
+{
+  "name": "pingen-sdk-node",
+  "version": "0.0.0",
+  "description": "A lightweight, fully typed Node.js SDK for the Pingen REST API",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "lint": "eslint src/ tests/",
+    "format": "prettier --write src/ tests/",
+    "format:check": "prettier --check src/ tests/",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "pingen",
+    "pingen-sdk",
+    "pingen-api",
+    "pingen-api-client",
+    "letters",
+    "letters-api"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pingencom/pingen-sdk-node.git"
+  },
+  "homepage": "https://github.com/pingencom/pingen-sdk-node#readme",
+  "bugs": {
+    "url": "https://github.com/pingencom/pingen-sdk-node/issues"
+  },
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "@typescript-eslint/eslint-plugin": "^8.58.2",
+    "@typescript-eslint/parser": "^8.58.2",
+    "@vitest/coverage-v8": "^2.1.9",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "nock": "^14.0.12",
+    "prettier": "^3.8.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5",
+    "vitest": "^2.1.9"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
