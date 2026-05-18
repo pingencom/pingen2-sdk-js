@@ -1,5 +1,5 @@
 {
-  "name": "pingen-sdk-node",
+  "name": "pingen2-sdk-js",
   "version": "0.0.0",
   "description": "A lightweight, fully typed Node.js SDK for the Pingen REST API",
   "main": "dist/index.js",
@@ -30,11 +30,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pingencom/pingen-sdk-node.git"
+    "url": "git+https://github.com/pingencom/pingen2-sdk-js.git"
   },
-  "homepage": "https://github.com/pingencom/pingen-sdk-node#readme",
+  "homepage": "https://github.com/pingencom/pingen2-sdk-js#readme",
   "bugs": {
-    "url": "https://github.com/pingencom/pingen-sdk-node/issues"
+    "url": "https://github.com/pingencom/pingen2-sdk-js/issues"
   },
   "license": "BSD-3-Clause",
   "devDependencies": {

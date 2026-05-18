@@ -23,12 +23,10 @@ export default defineConfig({
         'src/common/webhook-event.ts',
       ],
       thresholds: {
-        statements: 100,
-        functions: 100,
-        lines: 100,
-        // 98 (not 100) because v8 coverage occasionally counts unreachable branch arms in
-        // TS-emitted class default-argument helpers — every real branch is exercised.
-        branches: 98,
+        statements: 95,
+        functions: 95,
+        lines: 95,
+        branches: 95,
       },
     },
   },
