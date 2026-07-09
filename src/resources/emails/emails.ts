@@ -1,15 +1,16 @@
 import { PingenResponse } from '../../common/response';
+import { ListParams } from '../../common/list-params';
 import { OrgResource } from '../base';
 import { buildJsonApi } from '../../utils/payload';
 import { definedOnly } from '../../utils/object';
 import { EmailCreateOptions, EmailUploadOptions } from './types';
 
 export class Emails extends OrgResource {
-  getDetails(emailId: string, params?: Record<string, string>): Promise<PingenResponse> {
+  getDetails(emailId: string, params?: ListParams): Promise<PingenResponse> {
     return this.requestor.get(`/organisations/${this.orgId}/deliveries/emails/${emailId}`, params);
   }
 
-  getCollection(params?: Record<string, string>): Promise<PingenResponse> {
+  getCollection(params?: ListParams): Promise<PingenResponse> {
     return this.requestor.get(`/organisations/${this.orgId}/deliveries/emails`, params);
   }
 

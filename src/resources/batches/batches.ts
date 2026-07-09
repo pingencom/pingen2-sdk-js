@@ -1,4 +1,5 @@
 import { PingenResponse } from '../../common/response';
+import { ListParams } from '../../common/list-params';
 import { ValidationError } from '../../errors';
 import { OrgResource } from '../base';
 import { buildJsonApi } from '../../utils/payload';
@@ -9,11 +10,11 @@ const BATCH_NAME_MIN = 5;
 const BATCH_NAME_MAX = 100;
 
 export class Batches extends OrgResource {
-  getDetails(batchId: string, params?: Record<string, string>): Promise<PingenResponse> {
+  getDetails(batchId: string, params?: ListParams): Promise<PingenResponse> {
     return this.requestor.get(`/organisations/${this.orgId}/batches/${batchId}`, params);
   }
 
-  getCollection(params?: Record<string, string>): Promise<PingenResponse> {
+  getCollection(params?: ListParams): Promise<PingenResponse> {
     return this.requestor.get(`/organisations/${this.orgId}/batches`, params);
   }
 
