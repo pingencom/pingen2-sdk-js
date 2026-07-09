@@ -109,7 +109,7 @@ describe('EbillEvents', () => {
       .get(`/organisations/${ORG}/deliveries/ebills/${ebillId}/events`)
       .query({ 'page[number]': '2' })
       .reply(200, { data: [], meta: { total: 0 } });
-    expect((await ee().getCollection(ebillId, { 'page[number]': '2' })).statusCode).toBe(200);
+    expect((await ee().getCollection(ebillId, { page: { number: 2 } })).statusCode).toBe(200);
   });
 
   test('staging routing', async () => {
@@ -141,7 +141,7 @@ describe('EmailEvents', () => {
       .get(`/organisations/${ORG}/deliveries/emails/${emailId}/events`)
       .query({ 'page[number]': '3' })
       .reply(200, { data: [], meta: { total: 0 } });
-    expect((await ee().getCollection(emailId, { 'page[number]': '3' })).statusCode).toBe(200);
+    expect((await ee().getCollection(emailId, { page: { number: 3 } })).statusCode).toBe(200);
   });
 
   test('staging routing', async () => {

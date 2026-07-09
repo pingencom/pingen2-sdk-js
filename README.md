@@ -313,7 +313,7 @@ res.included; // included resources
 res.statusCode; // HTTP status
 res.headers; // response headers
 
-const col = (await client.letters(orgId).getCollection({ 'page[number]': '2' })).toCollection<LetterAttributes>();
+const col = (await client.letters(orgId).getCollection({ page: { number: 2 } })).toCollection<LetterAttributes>();
 col.meta?.total;
 col.meta?.current_page;
 col.links?.next;

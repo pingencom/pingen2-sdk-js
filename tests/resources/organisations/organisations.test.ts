@@ -29,7 +29,7 @@ describe('Organisations', () => {
       .get(`/organisations/${id}`)
       .query({ 'fields[organisations]': 'name,status' })
       .reply(200, organisationJson(id));
-    const r = await new Organisations(stagingRequestor()).getDetails(id, { 'fields[organisations]': 'name,status' });
+    const r = await new Organisations(stagingRequestor()).getDetails(id, { fields: { organisations: 'name,status' } });
     expect(r.statusCode).toBe(200);
   });
 

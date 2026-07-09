@@ -1,12 +1,13 @@
 import { PingenResponse } from '../../common/response';
+import { ListParams } from '../../common/list-params';
 import { BaseResource } from '../base';
 
 export class Organisations extends BaseResource {
-  getDetails(orgId: string, params?: Record<string, string>): Promise<PingenResponse> {
+  getDetails(orgId: string, params?: ListParams): Promise<PingenResponse> {
     return this.requestor.get(`/organisations/${orgId}`, params);
   }
 
-  getCollection(params?: Record<string, string>): Promise<PingenResponse> {
+  getCollection(params?: ListParams): Promise<PingenResponse> {
     return this.requestor.get('/organisations', params);
   }
 }

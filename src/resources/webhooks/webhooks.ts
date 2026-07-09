@@ -1,14 +1,15 @@
 import { PingenResponse } from '../../common/response';
+import { ListParams } from '../../common/list-params';
 import { OrgResource } from '../base';
 import { buildJsonApi } from '../../utils/payload';
 import { WebhookCreateOptions } from './types';
 
 export class Webhooks extends OrgResource {
-  getDetails(webhookId: string, params?: Record<string, string>): Promise<PingenResponse> {
+  getDetails(webhookId: string, params?: ListParams): Promise<PingenResponse> {
     return this.requestor.get(`/organisations/${this.orgId}/webhooks/${webhookId}`, params);
   }
 
-  getCollection(params?: Record<string, string>): Promise<PingenResponse> {
+  getCollection(params?: ListParams): Promise<PingenResponse> {
     return this.requestor.get(`/organisations/${this.orgId}/webhooks`, params);
   }
 

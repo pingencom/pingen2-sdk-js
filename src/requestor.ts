@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import { classifyFetchError, createPingenError } from './errors';
 import { PingenResponse } from './common/response';
+import { ListParams, serializeListParams } from './common/list-params';
 import {
   API_PRODUCTION,
   API_STAGING,
@@ -64,7 +65,7 @@ export class ApiRequestor {
     this.accessToken = accessToken;
   }
 
-  get(path: string, params?: Record<string, string>, extraHeaders?: Record<string, string>): Promise<PingenResponse> {
+  get(path: string, params?: ListParams, extraHeaders?: Record<string, string>): Promise<PingenResponse> {
     return this.execute('GET', this.buildUrl(path, params), undefined, extraHeaders);
   }
 
@@ -129,10 +130,11 @@ export class ApiRequestor {
     return body;
   }
 
-  private buildUrl(path: string, params?: Record<string, string>): string {
+  private buildUrl(path: string, params?: ListParams): string {
     const url = new URL(this.apiBase + path);
-    if (params) {
-      for (const [name, value] of Object.entries(params)) url.searchParams.set(name, value);
+    const query = serializeListParams(params);
+    if (query) {
+      for (const [name, value] of Object.entries(query)) url.searchParams.set(name, value);
     }
     return url.toString();
   }

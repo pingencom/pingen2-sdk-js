@@ -1,15 +1,16 @@
 import { PingenResponse } from '../../common/response';
+import { ListParams } from '../../common/list-params';
 import { OrgResource } from '../base';
 import { buildJsonApi } from '../../utils/payload';
 import { definedOnly } from '../../utils/object';
 import { EbillCreateOptions, EbillUploadOptions } from './types';
 
 export class Ebills extends OrgResource {
-  getDetails(ebillId: string, params?: Record<string, string>): Promise<PingenResponse> {
+  getDetails(ebillId: string, params?: ListParams): Promise<PingenResponse> {
     return this.requestor.get(`/organisations/${this.orgId}/deliveries/ebills/${ebillId}`, params);
   }
 
-  getCollection(params?: Record<string, string>): Promise<PingenResponse> {
+  getCollection(params?: ListParams): Promise<PingenResponse> {
     return this.requestor.get(`/organisations/${this.orgId}/deliveries/ebills`, params);
   }
 

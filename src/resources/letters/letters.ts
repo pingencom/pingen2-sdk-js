@@ -1,4 +1,5 @@
 import { PingenResponse } from '../../common/response';
+import { ListParams } from '../../common/list-params';
 import { ValidationError } from '../../errors';
 import { OrgResource } from '../base';
 import { buildJsonApi } from '../../utils/payload';
@@ -22,11 +23,11 @@ function validateAutoSend(opts: { autoSend: boolean } & Partial<LetterCreateOpti
 }
 
 export class Letters extends OrgResource {
-  getDetails(letterId: string, params?: Record<string, string>): Promise<PingenResponse> {
+  getDetails(letterId: string, params?: ListParams): Promise<PingenResponse> {
     return this.requestor.get(`/organisations/${this.orgId}/deliveries/letters/${letterId}`, params);
   }
 
-  getCollection(params?: Record<string, string>): Promise<PingenResponse> {
+  getCollection(params?: ListParams): Promise<PingenResponse> {
     return this.requestor.get(`/organisations/${this.orgId}/deliveries/letters`, params);
   }
 
