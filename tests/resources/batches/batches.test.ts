@@ -5,12 +5,18 @@ import {
   GroupingType,
   SplitType,
   SplitPosition,
-  createBatchDeliveryProduct,
   type BatchAttributes,
   type BatchRelationships,
 } from '../../../src/resources';
 import { PingenError, ValidationError } from '../../../src/errors';
-import { AddressPosition, DeliveryProduct, PrintMode, PrintSpectrum, PresetRelationship } from '../../../src/common';
+import {
+  AddressPosition,
+  ChannelType,
+  DeliveryProduct,
+  PrintMode,
+  PrintSpectrum,
+  PresetRelationship,
+} from '../../../src/common';
 import { API, ORG, FIXTURE_PDF, batchJson, stubFileUpload, requestor } from '../../helpers';
 
 describe('Batches', () => {
@@ -23,6 +29,8 @@ describe('Batches', () => {
     const res = (await batches().getDetails(id)).toResource<BatchAttributes>();
     expect(res.id).toBe(id);
     expect(res.attributes.name).toBe('Monthly Invoicing August 2022');
+    expect(res.attributes.channel_type).toBe('post');
+    expect(res.attributes.deliverable_count).toBe(2);
     expect((res.relationships as unknown as BatchRelationships).organisation?.data?.id).toBe(ORG);
   });
 
@@ -42,7 +50,7 @@ describe('Batches', () => {
       fileSignature: '$sig',
       name: 'Test',
       icon: BatchIcon.Campaign,
-      fileOriginalName: 'lorem.pdf',
+      fileOriginalName: 'test.pdf',
       addressPosition: AddressPosition.Left,
       groupingType: GroupingType.Zip,
       splitType: SplitType.Page,
@@ -64,7 +72,7 @@ describe('Batches', () => {
       fileSignature: '$sig',
       name: 'Test',
       icon: BatchIcon.Campaign,
-      fileOriginalName: 'lorem.pdf',
+      fileOriginalName: 'test.pdf',
       addressPosition: AddressPosition.Left,
       groupingType: GroupingType.Merge,
       splitType: SplitType.Custom,
@@ -91,7 +99,7 @@ describe('Batches', () => {
           filePath: FIXTURE_PDF,
           name: 'Test',
           icon: BatchIcon.Campaign,
-          fileOriginalName: 'lorem.pdf',
+          fileOriginalName: 'test.pdf',
           addressPosition: AddressPosition.Left,
           groupingType: GroupingType.Zip,
           splitType: SplitType.Page,
@@ -100,16 +108,111 @@ describe('Batches', () => {
     ).toBe(201);
   });
 
-  test('send', async () => {
-    const id = 'batchsnd-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
-    nock(API).patch(`/organisations/${ORG}/batches/${id}/send`).reply(200, batchJson(id));
-    const r = await batches().send({
-      batchId: id,
-      deliveryProducts: [createBatchDeliveryProduct('CH', DeliveryProduct.Fast)],
-      printMode: PrintMode.Simplex,
-      printSpectrum: PrintSpectrum.Color,
+  test('create defaults channel_type to post', async () => {
+    const id = 'batch006-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+    let bodySent: unknown;
+    nock(API)
+      .post(`/organisations/${ORG}/batches`, (body) => {
+        bodySent = body;
+        return true;
+      })
+      .reply(201, batchJson(id));
+    await batches().create({
+      fileUrl: 'https://s3.ex/file',
+      fileSignature: '$sig',
+      name: 'Test',
+      icon: BatchIcon.Campaign,
+      fileOriginalName: 'test.pdf',
+      addressPosition: AddressPosition.Left,
+      groupingType: GroupingType.Zip,
+      splitType: SplitType.Page,
     });
-    expect(r.statusCode).toBe(200);
+    const sent = bodySent as { data: { attributes: Record<string, unknown> } };
+    expect(sent.data.attributes.channel_type).toBe('post');
+  });
+
+  test('create sends channel_type when given', async () => {
+    const id = 'batch005-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+    let bodySent: unknown;
+    nock(API)
+      .post(`/organisations/${ORG}/batches`, (body) => {
+        bodySent = body;
+        return true;
+      })
+      .reply(201, batchJson(id));
+    await batches().create({
+      fileUrl: 'https://s3.ex/file',
+      fileSignature: '$sig',
+      name: 'Test',
+      icon: BatchIcon.Campaign,
+      fileOriginalName: 'test.pdf',
+      addressPosition: AddressPosition.Left,
+      groupingType: GroupingType.Merge,
+      splitType: SplitType.QrInvoice,
+      channelType: ChannelType.Ebill,
+    });
+    const sent = bodySent as { data: { attributes: Record<string, unknown> } };
+    expect(sent.data.attributes.channel_type).toBe('ebill');
+  });
+
+  describe('send', () => {
+    const id = 'batchsnd-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+
+    const captureSend = () => {
+      const captured: { body?: any } = {};
+      nock(API)
+        .patch(`/organisations/${ORG}/batches/${id}/send`, (body) => {
+          captured.body = body;
+          return true;
+        })
+        .reply(200, batchJson(id));
+      return captured;
+    };
+
+    test('post channel sends print settings under batches_channel_post_send', async () => {
+      const captured = captureSend();
+      const r = await batches().send({
+        batchId: id,
+        deliveryProduct: DeliveryProduct.Fast,
+        printMode: PrintMode.Simplex,
+        printSpectrum: PrintSpectrum.Color,
+      });
+      expect(r.statusCode).toBe(200);
+      expect(captured.body.data.type).toBe('batches_channel_post_send');
+      expect(captured.body.data.id).toBe(id);
+      expect(captured.body.data.attributes).toEqual({
+        delivery_product: 'fast',
+        print_mode: 'simplex',
+        print_spectrum: 'color',
+      });
+    });
+
+    test('explicit post channel behaves like the default', async () => {
+      const captured = captureSend();
+      await batches().send({
+        batchId: id,
+        channelType: ChannelType.Post,
+        deliveryProduct: DeliveryProduct.Bulk,
+        printMode: PrintMode.Duplex,
+        printSpectrum: PrintSpectrum.Grayscale,
+      });
+      expect(captured.body.data.type).toBe('batches_channel_post_send');
+      expect(captured.body.data.attributes.delivery_product).toBe('bulk');
+    });
+
+    test('email channel sends electronic_email only', async () => {
+      const captured = captureSend();
+      await batches().send({ batchId: id, channelType: ChannelType.Email });
+      expect(captured.body.data.type).toBe('batches_channel_email_send');
+      expect(captured.body.data.attributes).toEqual({ delivery_product: 'electronic_email' });
+    });
+
+    test('ebill channel sends electronic_ebill only', async () => {
+      const captured = captureSend();
+      await batches().send({ batchId: id, channelType: ChannelType.Ebill });
+      expect(captured.body.data.type).toBe('batches_channel_ebill_send');
+      expect(captured.body.data.attributes).toEqual({ delivery_product: 'electronic_ebill' });
+    });
   });
 
   test('cancel', async () => {
@@ -118,10 +221,31 @@ describe('Batches', () => {
     expect((await batches().cancel(id)).statusCode).toBe(202);
   });
 
-  test('delete', async () => {
+  test('delete defaults both deprecation-coupled flags to false', async () => {
     const id = 'batchdel-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
-    nock(API).delete(`/organisations/${ORG}/batches/${id}`).reply(204);
+    let bodySent: any;
+    nock(API)
+      .delete(`/organisations/${ORG}/batches/${id}`, (body) => {
+        bodySent = body;
+        return true;
+      })
+      .reply(204);
     expect((await batches().delete(id)).statusCode).toBe(204);
+    expect(bodySent.data).toMatchObject({ id, type: 'batches' });
+    expect(bodySent.data.attributes).toEqual({ with_deliverables: false, with_letters: false });
+  });
+
+  test('delete derives the deprecated with_letters flag from withDeliverables', async () => {
+    const id = 'batchdel-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+    let bodySent: any;
+    nock(API)
+      .delete(`/organisations/${ORG}/batches/${id}`, (body) => {
+        bodySent = body;
+        return true;
+      })
+      .reply(204);
+    await batches().delete(id, { withDeliverables: true });
+    expect(bodySent.data.attributes).toEqual({ with_deliverables: true, with_letters: true });
   });
 
   test('delete_unauthorized', async () => {

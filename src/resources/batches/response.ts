@@ -2,10 +2,14 @@ import { RelationshipItem, RelationshipMany } from '../../common/relationships';
 
 export interface BatchAttributes {
   name?: string;
+  /** `post` | `ebill` | `email` — see {@link ChannelType}. */
+  channel_type?: string;
   icon?: string;
   status?: string;
   file_original_name?: string;
+  /** @deprecated Superseded by {@link BatchAttributes.deliverable_count}. */
   letter_count?: number;
+  deliverable_count?: number;
   address_position?: string;
   price_currency?: string;
   price_value?: number;
@@ -26,4 +30,5 @@ export interface BatchStatisticsAttributes {
   letter_validating?: number;
   letter_groups?: unknown[];
   letter_countries?: unknown[];
+  letter_regions?: unknown[];
 }

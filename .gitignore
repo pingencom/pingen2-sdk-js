@@ -33,4 +33,4 @@ yarn-error.log*
 
 # Generated PDFs (keep test fixtures)
 *.pdf
-!src/fixtures/*.pdf
+!tests/fixtures/*.pdf

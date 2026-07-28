@@ -1,7 +1,7 @@
 {
   "name": "pingen2-sdk-js",
   "version": "0.0.0",
-  "description": "A lightweight, fully typed Node.js SDK for the Pingen REST API",
+  "description": "A lightweight, fully typed JS SDK for the Pingen REST API",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -26,8 +26,9 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "tsup",
-    "test": "vitest run --coverage",
-    "test:watch": "vitest",
+    "test": "vitest run --project unit --coverage",
+    "test:watch": "vitest --project unit",
+    "test:integration": "vitest run --project integration",
     "lint": "eslint src/ tests/",
     "format": "prettier --write src/ tests/",
     "format:check": "prettier --check src/ tests/",
@@ -64,6 +65,6 @@
     "vitest": "^2.1.9"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   }
 }

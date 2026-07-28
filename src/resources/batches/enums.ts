@@ -1,5 +1,3 @@
-import { DeliveryProduct } from '../../common/enums';
-
 export enum BatchIcon {
   Campaign = 'campaign',
   Megaphone = 'megaphone',
@@ -36,11 +34,17 @@ export enum SplitPosition {
   LastPage = 'last_page',
 }
 
-export interface BatchDeliveryProduct {
-  country: string;
-  delivery_product: string;
+// `send` takes a different JSON:API `type` per channel — the API validates the payload against
+// the batch's channel_type, so the SDK picks the matching one.
+export enum BatchSendType {
+  Post = 'batches_channel_post_send',
+  Email = 'batches_channel_email_send',
+  Ebill = 'batches_channel_ebill_send',
 }
 
-export function createBatchDeliveryProduct(country: string, deliveryProduct: DeliveryProduct): BatchDeliveryProduct {
-  return { country, delivery_product: deliveryProduct };
+// Electronic channels have exactly one delivery product each, so callers never pass it — the
+// SDK fills in the constant the API expects.
+export enum BatchElectronicDeliveryProduct {
+  Email = 'electronic_email',
+  Ebill = 'electronic_ebill',
 }

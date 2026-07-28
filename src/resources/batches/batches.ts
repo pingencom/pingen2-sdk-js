@@ -4,10 +4,44 @@ import { ValidationError } from '../../errors';
 import { OrgResource } from '../base';
 import { buildJsonApi } from '../../utils/payload';
 import { definedOnly } from '../../utils/object';
-import { BatchCreateOptions, BatchUploadOptions, BatchSendOptions, BatchEditOptions } from './types';
+import { ChannelType } from '../../common/enums';
+import { BatchElectronicDeliveryProduct, BatchSendType } from './enums';
+import {
+  BatchCreateOptions,
+  BatchUploadOptions,
+  BatchSendOptions,
+  BatchEditOptions,
+  BatchDeleteOptions,
+} from './types';
 
 const BATCH_NAME_MIN = 5;
 const BATCH_NAME_MAX = 100;
+
+// The `send` payload depends on the batch's channel: the physical (`post`) channel carries the
+// print settings, while the electronic channels take a single fixed delivery product.
+function sendPayload(opts: BatchSendOptions): { type: BatchSendType; attributes: Record<string, unknown> } {
+  switch (opts.channelType) {
+    case ChannelType.Email:
+      return {
+        type: BatchSendType.Email,
+        attributes: { delivery_product: BatchElectronicDeliveryProduct.Email },
+      };
+    case ChannelType.Ebill:
+      return {
+        type: BatchSendType.Ebill,
+        attributes: { delivery_product: BatchElectronicDeliveryProduct.Ebill },
+      };
+    default:
+      return {
+        type: BatchSendType.Post,
+        attributes: {
+          delivery_product: opts.deliveryProduct,
+          print_mode: opts.printMode,
+          print_spectrum: opts.printSpectrum,
+        },
+      };
+  }
+}
 
 export class Batches extends OrgResource {
   getDetails(batchId: string, params?: ListParams): Promise<PingenResponse> {
@@ -27,6 +61,7 @@ export class Batches extends OrgResource {
       file_url: opts.fileUrl,
       file_url_signature: opts.fileSignature,
       name: opts.name,
+      channel_type: opts.channelType ?? ChannelType.Post,
       icon: opts.icon,
       file_original_name: opts.fileOriginalName,
       address_position: opts.addressPosition,
@@ -43,17 +78,10 @@ export class Batches extends OrgResource {
   }
 
   send(opts: BatchSendOptions): Promise<PingenResponse> {
+    const { type, attributes } = sendPayload(opts);
     return this.requestor.patch(
       `/organisations/${this.orgId}/batches/${opts.batchId}/send`,
-      buildJsonApi({
-        type: 'batches',
-        id: opts.batchId,
-        attributes: {
-          delivery_products: opts.deliveryProducts,
-          print_mode: opts.printMode,
-          print_spectrum: opts.printSpectrum,
-        },
-      }),
+      buildJsonApi({ type, id: opts.batchId, attributes }),
     );
   }
 
@@ -61,8 +89,18 @@ export class Batches extends OrgResource {
     return this.requestor.patch(`/organisations/${this.orgId}/batches/${batchId}/cancel`);
   }
 
-  delete(batchId: string): Promise<PingenResponse> {
-    return this.requestor.delete(`/organisations/${this.orgId}/batches/${batchId}`);
+  // The API requires a body here: `with_letters` is deprecated but still mandatory, so it is
+  // derived from `withDeliverables` — the flag callers actually reason about.
+  delete(batchId: string, opts: BatchDeleteOptions = {}): Promise<PingenResponse> {
+    const withDeliverables = opts.withDeliverables ?? false;
+    return this.requestor.delete(
+      `/organisations/${this.orgId}/batches/${batchId}`,
+      buildJsonApi({
+        type: 'batches',
+        id: batchId,
+        attributes: { with_deliverables: withDeliverables, with_letters: withDeliverables },
+      }),
+    );
   }
 
   edit(batchId: string, opts: BatchEditOptions): Promise<PingenResponse> {
