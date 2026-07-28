@@ -1,7 +1,7 @@
 export const API_PRODUCTION = 'https://api.pingen.com';
 export const API_STAGING = 'https://api-staging.pingen.com';
 
-export const USER_AGENT = 'PINGEN.SDK.NODE';
+export const USER_AGENT = 'PINGEN.SDK.JS';
 export const DEFAULT_TIMEOUT_MS = 20_000;
 export const UPLOAD_TIMEOUT_MS = 60_000;
 export const MAX_RETRY_ATTEMPTS = 3;

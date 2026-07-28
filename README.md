@@ -1,6 +1,6 @@
 # pingen2-sdk-js
 
-A lightweight, fully typed Node.js SDK for the [Pingen REST API](https://api.pingen.com).
+A lightweight, fully typed JS SDK for the [Pingen REST API](https://api.pingen.com).
 
 ---
 
@@ -29,7 +29,7 @@ A lightweight, fully typed Node.js SDK for the [Pingen REST API](https://api.pin
 
 ## Requirements
 
-- Node.js 18+
+- Node.js 22+ (matches the CI matrix: 22 / 24 / 26)
 - TypeScript 5+ (optional — full typings included)
 - A Pingen account with OAuth credentials ([how to obtain](https://api.pingen.com/documentation#section/Authentication/How-to-obtain-a-Client-ID))
 
@@ -193,13 +193,14 @@ const price = (
 import {
   AddressPosition,
   BatchIcon,
+  ChannelType,
   GroupingType,
   SplitType,
   PrintMode,
   PrintSpectrum,
   DeliveryProduct,
   BatchAttributes,
-  createBatchDeliveryProduct,
+  BatchStatisticsAttributes,
 } from 'pingen2-sdk-js';
 
 const batches = client.batches(orgId);
@@ -212,18 +213,44 @@ const res = await batches.uploadAndCreate({
   addressPosition: AddressPosition.Left,
   groupingType: GroupingType.Merge,
   splitType: SplitType.Page,
+  channelType: ChannelType.Post, // post (default) | ebill | email — always sent
 });
 
+// Edit (name is validated locally: 5–100 characters)
+await batches.edit(batchId, { name: 'September invoices', icon: BatchIcon.Rocket });
+
+// Statistics
+const stats = (await batches.getStatistics(batchId)).toResource<BatchStatisticsAttributes>();
+
+// Delete. `withDeliverables` also drives the deprecated (but still mandatory) `with_letters`
+// flag — pass `true` to remove the contained letters / e-bills / emails as well.
+await batches.delete(batchId, { withDeliverables: true });
+```
+
+#### Sending a batch
+
+The payload depends on the batch channel — the SDK picks the matching JSON:API type
+(`batches_channel_post_send` / `_email_send` / `_ebill_send`) and, for the electronic channels,
+the single delivery product the API accepts:
+
+```typescript
+// post (default) — print settings required
 await batches.send({
   batchId,
-  deliveryProducts: [
-    createBatchDeliveryProduct('CH', DeliveryProduct.Fast),
-    createBatchDeliveryProduct('DE', DeliveryProduct.Cheap),
-  ],
+  deliveryProduct: DeliveryProduct.Fast,
   printMode: PrintMode.Duplex,
   printSpectrum: PrintSpectrum.Color,
 });
+
+// email → delivery_product: electronic_email
+await batches.send({ batchId, channelType: ChannelType.Email });
+
+// ebill → delivery_product: electronic_ebill
+await batches.send({ batchId, channelType: ChannelType.Ebill });
 ```
+
+Batch details expose `deliverable_count`; the older `letter_count` is deprecated but still
+returned by the API.
 
 ### Events
 
@@ -235,6 +262,10 @@ const events = (await client.letterEvents(orgId).getCollection(letterId)).toColl
 await client.letterEvents(orgId).getIssueCollection();
 await client.letterEvents(orgId).getDeliveredCollection();
 await client.batchEvents(orgId).getCollection(batchId);
+
+// Deliverable events for the electronic channels (type `deliverables_events`)
+await client.ebillEvents(orgId).getCollection(ebillId);
+await client.emailEvents(orgId).getCollection(emailId);
 ```
 
 ### Webhooks
@@ -294,6 +325,21 @@ const email = (
     },
   })
 ).toResource<EmailAttributes>();
+```
+
+Both channels support `cancel`, `delete` and `getFile`; e-bills created with `autoSend: false`
+are submitted later with `send`:
+
+```typescript
+await client.ebills(orgId).send(ebillId);
+
+await client.ebills(orgId).cancel(ebillId);
+await client.ebills(orgId).delete(ebillId);
+const ebillPdf = await client.ebills(orgId).getFile(ebillId);
+
+await client.emails(orgId).cancel(emailId);
+await client.emails(orgId).delete(emailId);
+const emailPdf = await client.emails(orgId).getFile(emailId);
 ```
 
 ---
@@ -371,20 +417,50 @@ const client = new PingenClient({
 });
 ```
 
-The SDK identifies itself with a `User-Agent: PINGEN.SDK.NODE` header on every request.
+The SDK identifies itself with a `User-Agent: PINGEN.SDK.JS` header on every request.
 
 ---
 
 ## Scripts
 
 ```sh
-npm test              # run tests with coverage
-npm run build         # clean + compile TypeScript
-npm run lint          # ESLint
-npm run format        # Prettier (auto-fix)
-npm run format:check  # Prettier (check only)
-npm run clean         # remove dist/
+npm test                 # unit tests with coverage
+npm run test:integration # integration tests against the staging API (credentials required)
+npm run build            # clean + compile TypeScript
+npm run lint             # ESLint
+npm run format           # Prettier (auto-fix)
+npm run format:check     # Prettier (check only)
+npm run clean            # remove dist/
 ```
+
+### Integration tests
+
+`tests/integration` exercises every resource against the real Pingen **staging** API:
+organisations, letters (happy / cancel / delete), batches (happy / delete), webhooks, emails,
+e-bills and the user endpoints, plus the OAuth token lifecycle.
+
+```sh
+cp .env.example .env    # fill in PINGEN2_CLIENT_ID / PINGEN2_CLIENT_SECRET
+npm run test:integration
+
+# or inside Docker — the repo (including .env) is mounted into the container
+docker compose exec js-sdk npm run test:integration
+```
+
+Both suites are Vitest projects declared in `vitest.workspace.ts` and share the settings in
+`vitest.config.ts`: `unit` is the mocked suite that gates coverage, `integration` adds the long
+timeouts and sequential execution the staging calls need. Run one project, or both at once:
+
+```sh
+npx vitest run --project integration
+npx vitest run                        # unit + integration, each labelled in the output
+```
+
+The suite is skipped when no credentials are configured, so it never breaks a plain `npm test`
+run (it is excluded from it) or CI. Environment variables take precedence over `.env`. It runs
+against staging by default and creates real (test-only) deliveries there, including the
+`tests/fixtures/test_simulate_cancellable.pdf` document, which staging keeps in a cancellable
+state so the cancel / delete flows can be asserted strictly.
 
 ---
 
@@ -395,9 +471,26 @@ The project is developed exclusively inside Docker — there is no supported loc
 ```sh
 docker compose build
 docker compose up -d
-docker compose exec nodejs-sdk npm ci
-docker compose exec nodejs-sdk npm test
+docker compose exec js-sdk npm test
+docker compose exec js-sdk npm run test:integration   # needs .env (see below)
 docker compose down
+```
+
+Dependencies are installed while the image is built, and compose seeds its `node_modules` volume
+from that layer — no manual `npm ci` step. Docker never re-seeds a volume that already exists, so
+after changing `package.json` / `package-lock.json` (or when coming from an older image) rebuild
+and renew the volume:
+
+```sh
+docker compose build
+docker compose up -d --force-recreate --renew-anon-volumes
+```
+
+The container runs Node 24 (matching the release workflow). Override per build if you need to
+reproduce another entry of the CI matrix:
+
+```sh
+NODE_VERSION=26 docker compose build
 ```
 
 ---

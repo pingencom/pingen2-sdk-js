@@ -49,7 +49,7 @@ describe('Letters', () => {
     const baseAuto = {
       fileUrl: 'https://s3.ex/file',
       fileSignature: '$sig',
-      fileOriginalName: 'lorem.pdf',
+      fileOriginalName: 'test.pdf',
       addressPosition: AddressPosition.Left,
       autoSend: true,
     };
@@ -85,7 +85,7 @@ describe('Letters', () => {
     const r = await letters().create({
       fileUrl: 'https://s3.ex/file',
       fileSignature: '$sig',
-      fileOriginalName: 'lorem.pdf',
+      fileOriginalName: 'test.pdf',
       addressPosition: AddressPosition.Left,
       autoSend: true,
       deliveryProduct: DeliveryProduct.Fast,
@@ -102,7 +102,7 @@ describe('Letters', () => {
     const r = await letters().create({
       fileUrl: 'https://s3.ex/file',
       fileSignature: '$sig',
-      fileOriginalName: 'lorem.pdf',
+      fileOriginalName: 'test.pdf',
       addressPosition: AddressPosition.Left,
       autoSend: false,
     });
@@ -121,7 +121,7 @@ describe('Letters', () => {
     await letters().create({
       fileUrl: 'https://s3.ex/file',
       fileSignature: '$sig',
-      fileOriginalName: 'lorem.pdf',
+      fileOriginalName: 'test.pdf',
       addressPosition: AddressPosition.Left,
       autoSend: false,
       deliveryProduct: DeliveryProduct.Fast,
@@ -146,7 +146,7 @@ describe('Letters', () => {
     scope.post(`/organisations/${ORG}/deliveries/letters`).reply(201, letterJson(id));
     const r = await letters().uploadAndCreate({
       filePath: FIXTURE_PDF,
-      fileOriginalName: 'lorem.pdf',
+      fileOriginalName: 'test.pdf',
       addressPosition: AddressPosition.Left,
       autoSend: false,
     });

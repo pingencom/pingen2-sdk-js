@@ -32,6 +32,13 @@ export class Ebills extends OrgResource {
     );
   }
 
+  send(ebillId: string): Promise<PingenResponse> {
+    return this.requestor.patch(
+      `/organisations/${this.orgId}/deliveries/ebills/${ebillId}/send`,
+      buildJsonApi({ type: 'ebills', id: ebillId }),
+    );
+  }
+
   cancel(ebillId: string): Promise<PingenResponse> {
     return this.requestor.patch(`/organisations/${this.orgId}/deliveries/ebills/${ebillId}/cancel`);
   }

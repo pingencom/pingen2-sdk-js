@@ -34,7 +34,7 @@ describe('Ebills', () => {
         await eb().create({
           fileUrl: 'https://s3.ex/file',
           fileSignature: '$sig',
-          fileOriginalName: 'lorem.pdf',
+          fileOriginalName: 'test.pdf',
           autoSend: false,
         })
       ).statusCode,
@@ -53,7 +53,7 @@ describe('Ebills', () => {
     await eb().create({
       fileUrl: 'https://s3.ex/file',
       fileSignature: '$sig',
-      fileOriginalName: 'lorem.pdf',
+      fileOriginalName: 'test.pdf',
       autoSend: true,
       metaData: {
         invoice_number: 'INV-001',
@@ -77,7 +77,7 @@ describe('Ebills', () => {
       (
         await eb().uploadAndCreate({
           filePath: FIXTURE_PDF,
-          fileOriginalName: 'lorem.pdf',
+          fileOriginalName: 'test.pdf',
           autoSend: false,
         })
       ).statusCode,
@@ -88,6 +88,19 @@ describe('Ebills', () => {
     const id = 'ebill005-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
     nock(STAGING).get(`/organisations/${ORG}/deliveries/ebills/${id}`).reply(200, ebillJson(id));
     expect((await eb(true).getDetails(id)).statusCode).toBe(200);
+  });
+
+  test('send submits the ebill with its JSON:API identity', async () => {
+    const id = 'ebillsnd-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+    let bodySent: any;
+    nock(API)
+      .patch(`/organisations/${ORG}/deliveries/ebills/${id}/send`, (body) => {
+        bodySent = body;
+        return true;
+      })
+      .reply(200, ebillJson(id));
+    expect((await eb().send(id)).statusCode).toBe(200);
+    expect(bodySent.data).toEqual({ type: 'ebills', id });
   });
 
   test('cancel', async () => {
