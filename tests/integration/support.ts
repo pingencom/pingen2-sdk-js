@@ -16,11 +16,7 @@ import { PingenClient, PingenError } from '../../src';
 export const FILE_NAME = 'test.pdf';
 export const FILE_NAME_CANCELLABLE = 'test_simulate_cancellable.pdf';
 
-const KEYS = [
-  'PINGEN2_CLIENT_ID',
-  'PINGEN2_CLIENT_SECRET',
-  'PINGEN2_ORGANISATION_ID',
-] as const;
+const KEYS = ['PINGEN2_CLIENT_ID', 'PINGEN2_CLIENT_SECRET', 'PINGEN2_ORGANISATION_ID'] as const;
 
 export type CredentialKey = (typeof KEYS)[number];
 export type Credentials = Record<CredentialKey, string>;
