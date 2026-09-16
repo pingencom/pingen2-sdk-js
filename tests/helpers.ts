@@ -6,7 +6,7 @@ export const API = 'https://api.pingen.com';
 export const STAGING = 'https://api-staging.pingen.com';
 export const ORG = 'testxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx1';
 export const TOKEN = 'test_access_token';
-export const FIXTURE_PDF = path.join(__dirname, 'fixtures', 'lorem.pdf');
+export const FIXTURE_PDF = path.join(__dirname, 'fixtures', 'test.pdf');
 
 // Build a fresh ApiRequestor wired to either prod or staging — keeps all resource tests in
 // one factory instead of duplicating `new ApiRequestor(TOKEN, ...)` in every file.
@@ -19,7 +19,7 @@ export function letterJson(id: string) {
       type: 'letters',
       attributes: {
         status: 'validating',
-        file_original_name: 'lorem.pdf',
+        file_original_name: 'test.pdf',
         file_pages: 2,
         address: 'Hans Meier\nExample street 4\n8000 Zürich\nSwitzerland',
         address_position: 'left',
@@ -59,10 +59,12 @@ export function batchJson(id: string) {
       type: 'batches',
       attributes: {
         name: 'Monthly Invoicing August 2022',
+        channel_type: 'post',
         icon: 'campaign',
         status: 'validating',
-        file_original_name: 'lorem.pdf',
+        file_original_name: 'test.pdf',
         letter_count: 2,
+        deliverable_count: 2,
         address_position: 'left',
         print_mode: 'simplex',
         print_spectrum: 'color',
@@ -125,7 +127,7 @@ export function ebillJson(id: string) {
       type: 'ebills',
       attributes: {
         status: 'validating',
-        file_original_name: 'lorem.pdf',
+        file_original_name: 'test.pdf',
         file_pages: 2,
         recipient_identifier: '41100010014282213',
         invoice_number: 'Invoice 8051',
@@ -158,7 +160,7 @@ export function emailJson(id: string) {
       type: 'emails',
       attributes: {
         status: 'validating',
-        file_original_name: 'lorem.pdf',
+        file_original_name: 'test.pdf',
         file_pages: 2,
         recipient_identifier: 'info@acme.com',
         price_currency: 'CHF',

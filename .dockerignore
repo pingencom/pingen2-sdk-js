@@ -1,0 +1,13 @@
+# The image only needs the manifests (see Dockerfile) — sources come in through the bind mount,
+# so keep the build context small and never ship local artefacts or secrets into it.
+node_modules
+dist
+coverage
+.git
+.github
+.idea
+.vscode
+.env
+.env.*
+!.env.example
+*.log

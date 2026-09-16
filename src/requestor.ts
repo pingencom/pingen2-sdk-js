@@ -77,8 +77,10 @@ export class ApiRequestor {
     return this.execute('PATCH', this.apiBase + path, payload, extraHeaders);
   }
 
-  delete(path: string): Promise<PingenResponse> {
-    return this.execute('DELETE', this.apiBase + path, undefined);
+  // Most DELETE endpoints take no body — `payload` exists for the ones that do (batch delete
+  // requires a JSON:API document carrying with_deliverables).
+  delete(path: string, payload?: string): Promise<PingenResponse> {
+    return this.execute('DELETE', this.apiBase + path, payload);
   }
 
   async put(url: string, filePath: string): Promise<void> {

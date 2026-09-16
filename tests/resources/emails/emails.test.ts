@@ -32,7 +32,7 @@ describe('Emails', () => {
         await em().create({
           fileUrl: 'https://s3.ex/file',
           fileSignature: '$sig',
-          fileOriginalName: 'lorem.pdf',
+          fileOriginalName: 'test.pdf',
           autoSend: false,
         })
       ).statusCode,
@@ -60,7 +60,7 @@ describe('Emails', () => {
     await em().create({
       fileUrl: 'https://s3.ex/file',
       fileSignature: '$sig',
-      fileOriginalName: 'lorem.pdf',
+      fileOriginalName: 'test.pdf',
       autoSend: true,
       metaData: meta,
       preset: new PresetRelationship('preset-456'),
@@ -79,7 +79,7 @@ describe('Emails', () => {
       (
         await em().uploadAndCreate({
           filePath: FIXTURE_PDF,
-          fileOriginalName: 'lorem.pdf',
+          fileOriginalName: 'test.pdf',
           autoSend: false,
         })
       ).statusCode,

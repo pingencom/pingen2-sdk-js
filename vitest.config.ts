@@ -1,10 +1,11 @@
 import { defineConfig } from 'vitest/config';
 
+// Settings shared by both projects in vitest.workspace.ts — that file owns the per-project test
+// globs and timeouts. Coverage is measured on the unit project only (`npm test`).
 export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['tests/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
