@@ -110,9 +110,6 @@ describeIntegration('Pingen API (staging)', () => {
 
       expect(response.statusCode).toBe(200);
       expect(organisation.id).toBe(orgId);
-      if (credentials.PINGEN2_ORGANIZATION_NAME) {
-        expect(organisation.attributes.name).toBe(credentials.PINGEN2_ORGANIZATION_NAME);
-      }
     });
   });
 

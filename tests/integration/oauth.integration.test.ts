@@ -8,23 +8,21 @@
  */
 
 import { ApiRequestor, OAuth, Organisations } from '../../src';
-import { createClient, loadCredentials, missingCredentials, useStaging } from './support';
+import { USE_STAGING, createClient, loadCredentials, missingCredentials } from './support';
 
 const credentials = loadCredentials();
 const describeIntegration = describe.skipIf(missingCredentials(credentials));
 
 describeIntegration('OAuth (staging)', () => {
-  const staging = useStaging(credentials);
-
   const buildOAuth = (): OAuth =>
     new OAuth({
       clientId: credentials.PINGEN2_CLIENT_ID,
       clientSecret: credentials.PINGEN2_CLIENT_SECRET,
-      useStaging: staging,
+      useStaging: USE_STAGING,
     });
 
   const organisationsWith = (token: string): Organisations =>
-    new Organisations(new ApiRequestor(token, { useStaging: staging }));
+    new Organisations(new ApiRequestor(token, { useStaging: USE_STAGING }));
 
   test('token can be obtained and used', async () => {
     const token = await buildOAuth().getAccessToken();

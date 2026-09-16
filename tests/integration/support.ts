@@ -3,8 +3,7 @@
  *
  * The integration tests hit the real Pingen **staging** API and therefore need valid staging
  * credentials. Credentials are read from a `.env` file at the repository root (copy
- * `.env.example` and fill it in) or from real environment variables (handy for CI). Real
- * environment variables take precedence over values in `.env`.
+ * `.env.example` and fill it in).
  */
 
 import fs from 'fs';
@@ -20,13 +19,14 @@ export const FILE_NAME_CANCELLABLE = 'test_simulate_cancellable.pdf';
 const KEYS = [
   'PINGEN2_CLIENT_ID',
   'PINGEN2_CLIENT_SECRET',
-  'PINGEN2_ORGANIZATION_ID',
-  'PINGEN2_ORGANIZATION_NAME',
-  'PINGEN2_USE_STAGING',
+  'PINGEN2_ORGANISATION_ID',
 ] as const;
 
 export type CredentialKey = (typeof KEYS)[number];
 export type Credentials = Record<CredentialKey, string>;
+
+/** The suite must never run against production. */
+export const USE_STAGING = true;
 
 // tests/integration/support.ts -> repository root is two levels up.
 function repoRoot(): string {
@@ -52,7 +52,7 @@ function parseDotenv(filePath: string): Record<string, string> {
   return values;
 }
 
-/** Integration credentials, merging `.env` and real env vars (env vars win). */
+/** Integration credentials for the staging API. */
 export function loadCredentials(): Credentials {
   const dotenv = parseDotenv(path.join(repoRoot(), '.env'));
   const credentials = {} as Credentials;
@@ -64,12 +64,6 @@ export function loadCredentials(): Credentials {
 
 export function missingCredentials(credentials: Credentials): boolean {
   return !(credentials.PINGEN2_CLIENT_ID && credentials.PINGEN2_CLIENT_SECRET);
-}
-
-/** Default to staging — integration tests must never run against production. */
-export function useStaging(credentials: Credentials): boolean {
-  const raw = (credentials.PINGEN2_USE_STAGING || 'true').trim().toLowerCase();
-  return !['0', 'false', 'no', 'off'].includes(raw);
 }
 
 export function documentPath(fileName: string = FILE_NAME): string {
@@ -171,7 +165,7 @@ export async function createClient(credentials: Credentials): Promise<PingenClie
   const client = new PingenClient({
     clientId: credentials.PINGEN2_CLIENT_ID,
     clientSecret: credentials.PINGEN2_CLIENT_SECRET,
-    useStaging: useStaging(credentials),
+    useStaging: USE_STAGING,
   });
   await client.ensureToken();
   return client;
@@ -179,8 +173,8 @@ export async function createClient(credentials: Credentials): Promise<PingenClie
 
 /** Organisation to run against: the configured one, or the first one the account can see. */
 export async function resolveOrganisationId(client: PingenClient, credentials: Credentials): Promise<string> {
-  if (credentials.PINGEN2_ORGANIZATION_ID) {
-    return credentials.PINGEN2_ORGANIZATION_ID;
+  if (credentials.PINGEN2_ORGANISATION_ID) {
+    return credentials.PINGEN2_ORGANISATION_ID;
   }
   const organisations = (await client.organisations().getCollection()).toCollection();
   const first = organisations.data[0]?.id;

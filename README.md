@@ -457,8 +457,8 @@ npx vitest run                        # unit + integration, each labelled in the
 ```
 
 The suite is skipped when no credentials are configured, so it never breaks a plain `npm test`
-run (it is excluded from it) or CI. Environment variables take precedence over `.env`. It runs
-against staging by default and creates real (test-only) deliveries there, including the
+run (it is excluded from it) or CI. It runs against staging and creates real (test-only)
+deliveries there, including the
 `tests/fixtures/test_simulate_cancellable.pdf` document, which staging keeps in a cancellable
 state so the cancel / delete flows can be asserted strictly.
 
