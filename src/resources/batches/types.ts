@@ -14,6 +14,7 @@ export interface BatchCreateOptions {
   channelType?: ChannelType;
   splitSize?: number;
   splitSeparator?: string;
+  /** Required by the API when `splitType` is {@link SplitType.Custom} or {@link SplitType.QrInvoice}. */
   splitPosition?: SplitPosition;
   preset?: PresetRelationship;
 }
@@ -30,6 +31,7 @@ export interface BatchUploadOptions {
   channelType?: ChannelType;
   splitSize?: number;
   splitSeparator?: string;
+  /** See {@link BatchCreateOptions.splitPosition}. */
   splitPosition?: SplitPosition;
   preset?: PresetRelationship;
 }
@@ -66,8 +68,7 @@ export interface BatchEditOptions {
 export interface BatchDeleteOptions {
   /**
    * Also delete the deliverables (letters / e-bills / emails) contained in the batch.
-   * Defaults to `false`. The API still requires the deprecated `with_letters` flag, which the
-   * SDK derives from this value.
+   * Defaults to `false`.
    */
   withDeliverables?: boolean;
 }

@@ -221,7 +221,7 @@ describe('Batches', () => {
     expect((await batches().cancel(id)).statusCode).toBe(202);
   });
 
-  test('delete defaults both deprecation-coupled flags to false', async () => {
+  test('delete sends with_deliverables false by default', async () => {
     const id = 'batchdel-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
     let bodySent: any;
     nock(API)
@@ -232,10 +232,10 @@ describe('Batches', () => {
       .reply(204);
     expect((await batches().delete(id)).statusCode).toBe(204);
     expect(bodySent.data).toMatchObject({ id, type: 'batches' });
-    expect(bodySent.data.attributes).toEqual({ with_deliverables: false, with_letters: false });
+    expect(bodySent.data.attributes).toEqual({ with_deliverables: false });
   });
 
-  test('delete derives the deprecated with_letters flag from withDeliverables', async () => {
+  test('delete forwards withDeliverables', async () => {
     const id = 'batchdel-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
     let bodySent: any;
     nock(API)
@@ -245,7 +245,7 @@ describe('Batches', () => {
       })
       .reply(204);
     await batches().delete(id, { withDeliverables: true });
-    expect(bodySent.data.attributes).toEqual({ with_deliverables: true, with_letters: true });
+    expect(bodySent.data.attributes).toEqual({ with_deliverables: true });
   });
 
   test('delete_unauthorized', async () => {
