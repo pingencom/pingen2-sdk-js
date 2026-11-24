@@ -222,8 +222,7 @@ await batches.edit(batchId, { name: 'September invoices', icon: BatchIcon.Rocket
 // Statistics
 const stats = (await batches.getStatistics(batchId)).toResource<BatchStatisticsAttributes>();
 
-// Delete. `withDeliverables` also drives the deprecated (but still mandatory) `with_letters`
-// flag — pass `true` to remove the contained letters / e-bills / emails as well.
+// Delete. Pass `withDeliverables: true` to remove the contained letters / e-bills / emails as well.
 await batches.delete(batchId, { withDeliverables: true });
 ```
 

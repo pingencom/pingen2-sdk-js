@@ -89,16 +89,14 @@ export class Batches extends OrgResource {
     return this.requestor.patch(`/organisations/${this.orgId}/batches/${batchId}/cancel`);
   }
 
-  // The API requires a body here: `with_letters` is deprecated but still mandatory, so it is
-  // derived from `withDeliverables` — the flag callers actually reason about.
+  // The API requires a body here; `with_deliverables` is always sent explicitly.
   delete(batchId: string, opts: BatchDeleteOptions = {}): Promise<PingenResponse> {
-    const withDeliverables = opts.withDeliverables ?? false;
     return this.requestor.delete(
       `/organisations/${this.orgId}/batches/${batchId}`,
       buildJsonApi({
         type: 'batches',
         id: batchId,
-        attributes: { with_deliverables: withDeliverables, with_letters: withDeliverables },
+        attributes: { with_deliverables: opts.withDeliverables ?? false },
       }),
     );
   }
